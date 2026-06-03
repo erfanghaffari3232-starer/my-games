@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جوک‌ساز</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            min-height: 100vh; display: flex; justify-content: center; align-items: center;
+            padding: 20px; color: white;
+        }
+        .app {
+            background: #1a1a1a; border-radius: 24px; padding: 2rem; width: 100%;
+            max-width: 480px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); border: 2px solid #f39c12;
+            text-align: center;
+        }
+        .title {
+            font-size: 2.5rem; margin-bottom: 0.3rem;
+            animation: shake 0.5s ease infinite;
+        }
+        @keyframes shake {
+            0%, 100% { transform: rotate(0); }
+            25% { transform: rotate(10deg); }
+            75% { transform: rotate(-10deg); }
+        }
+        .subtitle { color: #f39c12; font-size: 1.5rem; margin-bottom: 1.5rem; font-weight: bold; }
+        .joke-card {
+            background: #0d0d1a; border: 2px solid #533483; border-radius: 20px;
+            padding: 2rem 1.5rem; margin-bottom: 1.5rem; min-height: 120px;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.5s ease;
+        }
+        .joke-text {
+            font-size: 1.3rem; line-height: 2; color: white;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .emoji-reaction { font-size: 4rem; margin-bottom: 1rem; transition: 0.3s; }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        button {
+            padding: 14px 22px; border: none; border-radius: 15px; font-size: 1.1rem;
+            font-weight: bold; cursor: pointer; font-family: inherit; transition: all 0.3s;
+        }
+        .new-joke-btn {
+            background: #f39c12; color: #1a1a1a; flex: 1; min-width: 150px;
+        }
+        .new-joke-btn:hover { background: #e67e22; transform: scale(1.05); }
+        .copy-btn {
+            background: #533483; color: white;
+        }
+        .copy-btn:hover { background: #6c3fa0; }
+        .rate-btns { display: flex; gap: 8px; justify-content: center; margin-top: 1rem; }
+        .rate-btn {
+            background: #2a2a2a; color: white; border: 1px solid #444; padding: 10px 16px;
+            border-radius: 12px; font-size: 1.3rem; cursor: pointer; transition: 0.3s;
+        }
+        .rate-btn:hover { background: #e94560; border-color: #e94560; transform: scale(1.2); }
+        .counter { color: #888; font-size: 0.85rem; margin-top: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="title">🤣</div>
+        <div class="subtitle">جوک‌ساز خنده‌دار</div>
+
+        <!-- ایموجی -->
+        <div class="emoji-reaction" id="emojiReaction">😂</div>
+
+        <!-- جوک -->
+        <div class="joke-card">
+            <div class="joke-text" id="jokeText">دکمه زیر رو بزن!</div>
+        </div>
+
+        <!-- دکمه‌ها -->
+        <div class="btn-group">
+            <button class="new-joke-btn" onclick="newJoke()">🎲 جوک جدید</button>
+            <button class="copy-btn" onclick="copyJoke()">📋 کپی</button>
+        </div>
+
+        <!-- امتیازدهی -->
+        <div class="rate-btns">
+            <button class="rate-btn" onclick="rateJoke('bad')" title="بد">😐</button>
+            <button class="rate-btn" onclick="rateJoke('good')" title="خوب">😊</button>
+            <button class="rate-btn" onclick="rateJoke('funny')" title="خنده‌دار">😂</button>
+            <button class="rate-btn" onclick="rateJoke('hilarious')" title="عالی">🤣</button>
+        </div>
+
+        <!-- شمارنده -->
+        <div class="counter" id="counter">تا حالا ۰ جوک دیدی</div>
+    </div>
+
+    <script>
+        const jokes = [
+            'به یکی میگن: "چرا اینقدر خوشحالی؟" میگه: "چون امروز صبح فهمیدم که دیروز اشتباهی فکر می‌کردم امروز دوشنبه‌ست!" 😂',
+            'یارو میره دکتر، دکتر میگه: "بیماریت چیه؟" میگه: "هر وقت چایی میخورم چشمم درد میگیره!" دکتر میگه: "قاشق رو از توی لیوان دربیار!" 🥄',
+            'به سوسکه میگن: "چرا اینقدر تند راه میری؟" میگه: "آخه خونه‌مون سر کوچه‌ست، اگه آروم برم گم میشم!" 🐞',
+            'یارو میره نونوایی، میگه: "آقا نون داری؟" شاطر میگه: "نه!" یارو میگه: "پس چرا اینقدر آرد داری؟" شاطر میگه: "آقا این برف داره میاد!" ❄️',
+            'به گربه میگن: "چرا همیشه ناراحتی؟" میگه: "آخه هر چی به صاحبم میگم میو، فکر می‌کنه غذا میخوام، در حالی که من فقط دارم غر میزنم!" 🐱',
+            'یارو میره خواستگاری، پدر عروس میگه: "شغلت چیه؟" میگه: "من ستاره‌شناسم!" پدر عروس میگه: "یعنی چی؟" میگه: "شبا ستاره‌ها رو نگاه می‌کنم، میگم فردا هوا آفتابیه!" ⭐',
+            'دو تا مورچه به هم میرسن، یکی میگه: "کجا میری؟" اون یکی میگه: "می‌رم باشگاه!" میگه: "باشگاه دیگه چیه؟" میگه: "می‌خوام شش تیکه بشم!" 💪',
+            'به تخم مرغ میگن: "چرا اینقدر می‌ترسی؟" میگه: "آخه هر کی منو میبینه، میگه بزنمت!" 🥚',
+            'یارو میره کتابفروشی، میگه: "کتاب 'چگونه در ۳۰ روز میلیونر شویم' دارید؟" فروشنده میگه: "بله!" یارو میگه: "خب پس تو چرا اینجایی؟" 📚',
+            'به آینه میگن: "چرا همیشه جدی هستی؟" میگه: "چون هر کی منو نگاه می‌کنه، قیافه‌ش رو درمیاره!" 🪞',
+            'یارو میره آرایشگاه، آرایشگر میگه: "چه مدلی بزنم؟" میگه: "یه مدلی بزن که مادرم منو نشناسه!" آرایشگر میگه: "باشه، پس کچلت می‌کنم!" 💇',
+            'به کفش میگن: "چرا همیشه دوتایی هستید؟" میگه: "آخه اگه تنها باشیم، لنگ می‌زنیم!" 👟',
+            'یارو به دوستش میگه: "من دیشب انقدر خندیدم که از تخت افتادم!" دوستش میگه: "چی شده بود؟" میگه: "خواب دیدم یه جوک خیلی بامزه تعریف می‌کنم!" 😴',
+            'به مداد میگن: "چرا اینقدر کوتاه شدی؟" میگه: "آخه هر روز سرم رو می‌تراشن!" ✏️',
+            'یارو میره رستوران، گارسون میگه: "غذا چی میل دارید؟" میگه: "یه چیز سبک!" گارسون میگه: "لامپ چطوره؟" 💡',
+            'به ساعت میگن: "چرا همیشه عجله داری؟" میگه: "آخه وقت طلاست و من هر ثانیه عقربه‌هام طلا میشه!" ⏰',
+            'دو تا نون باگت به هم میرسن، یکی میگه: "چرا اینقدر دراز شدی؟" اون یکی میگه: "وراثته دیگه، بابامم بربری بود!" 🥖',
+            'یارو میره دکتر، دکتر میگه: "باید آمپول بزنی!" میگه: "دکتر آمپول رو از راه دور بزن!" دکتر میگه: "چرا؟" میگه: "آخه من از نزدیک میترسم!" 💉'
+        ];
+
+        let jokeCount = 0;
+        let currentJoke = '';
+        const emojis = ['😂', '🤣', '😆', '😹', '💀', '😭', '🤪', '😁', '🙃', '😜'];
+
+        function newJoke() {
+            const randomIndex = Math.floor(Math.random() * jokes.length);
+            currentJoke = jokes[randomIndex];
+            document.getElementById('jokeText').textContent = currentJoke;
+            
+            // ایموجی تصادفی
+            const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+            document.getElementById('emojiReaction').textContent = randomEmoji;
+            
+            jokeCount++;
+            document.getElementById('counter').textContent = `تا حالا ${jokeCount.toLocaleString('fa-IR')} جوک دیدی`;
+        }
+
+        function copyJoke() {
+            if (!currentJoke) {
+                alert('اول یه جوک انتخاب کن!');
+                return;
+            }
+            navigator.clipboard.writeText(currentJoke).then(() => {
+                alert('✅ جوک کپی شد! برای دوستات بفرست!');
+            });
+        }
+
+        function rateJoke(type) {
+            const reactions = {
+                'bad': '😐',
+                'good': '😊',
+                'funny': '😂',
+                'hilarious': '🤣'
+            };
+            document.getElementById('emojiReaction').textContent = reactions[type];
+        }
+
+        // شروع با اولین جوک
+        newJoke();
+    </script>
+</body>
+</html>
